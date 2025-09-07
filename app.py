@@ -4,6 +4,7 @@ import io
 import xlrd
 import openpyxl
 from openpyxl.styles import Border, Side
+import datetime
 
 
 st.set_page_config(page_title="Excel Merger Tool", layout="centered")
@@ -18,6 +19,7 @@ st.write("""
 3. Column **BU** के हिसाब से **TIME SLOT** column auto भरता है → `APP-BAL-<BU>`.
 4. सभी files merge होकर एक ही Excel बनती है.
 5. Final Excel में पूरी sheet को **All Borders** apply किए जाते हैं.
+6. Output filename इस format में होगा: `4158_4341_4359_BalanceConsForReading_07Sep2025.xlsx`
 """)
 
 
@@ -92,7 +94,19 @@ if st.button("🚀 Merge Files"):
                 else:
                     st.warning("⚠️ 'BU' or 'TIME SLOT' column not found. Columns found: " + str(list(merged_df.columns)))
 
-                output_file = "Merged_Output.xlsx"
+                # ✅ Unique BU values for filename
+                if "BU" in merged_df.columns:
+                    unique_bus = merged_df["BU"].dropna().unique().tolist()
+                    bu_part = "_".join(unique_bus)
+                else:
+                    bu_part = "BU"
+
+                # ✅ Date part for filename
+                date_str = datetime.datetime.now().strftime("%d%b%Y")  # e.g. 07Sep2025
+
+                # ✅ Final filename
+                output_file = f"{bu_part}_BalanceConsForReading_{date_str}.xlsx"
+
                 merged_df.to_excel(output_file, index=False)
 
                 # ✅ Add all borders
@@ -107,6 +121,6 @@ if st.button("🚀 Merge Files"):
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
 
-                st.success("✅ Merged file created successfully with borders!")
+                st.success(f"✅ Merged file created successfully: {output_file}")
         except Exception as e:
             st.error(f"Error: {e}")
