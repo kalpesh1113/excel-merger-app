@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
-import os
+import io
+import xlrd
+import openpyxl
 
 st.set_page_config(page_title="Excel Merger Tool", layout="centered")
 
@@ -15,11 +17,27 @@ st.write("""
 """)
 
 uploaded_files = st.file_uploader(
-    "Select Excel Files", type=["xls", "xlsx"], accept_multiple_files=True
+    "Select Excel Files (.xls / .xlsx)", type=["xls", "xlsx"], accept_multiple_files=True
 )
 
-if uploaded_files:
-    st.success(f"{len(uploaded_files)} files selected")
+
+# ---- Helper function to convert .xls → .xlsx ----
+def convert_xls_to_xlsx(xls_bytes):
+    book_xls = xlrd.open_workbook(file_contents=xls_bytes)
+    book_xlsx = openpyxl.Workbook()
+    sheet_xlsx = book_xlsx.active
+
+    sheet_xls = book_xls.sheet_by_index(0)
+    for row in range(sheet_xls.nrows):
+        for col in range(sheet_xls.ncols):
+            sheet_xlsx.cell(row=row+1, column=col+1).value = sheet_xls.cell_value(row, col)
+
+    # Save to bytes buffer
+    xlsx_bytes = io.BytesIO()
+    book_xlsx.save(xlsx_bytes)
+    xlsx_bytes.seek(0)
+    return xlsx_bytes
+
 
 if st.button("🚀 Merge Files"):
     if not uploaded_files:
@@ -28,7 +46,15 @@ if st.button("🚀 Merge Files"):
         merged_df = None
         try:
             for i, file in enumerate(uploaded_files):
-                df = pd.read_excel(file, skiprows=4, dtype=str)
+                file_bytes = file.read()
+                
+                # Convert old .xls to .xlsx
+                if file.name.endswith(".xls"):
+                    st.info(f"Converting {file.name} to .xlsx format...")
+                    file_bytes = convert_xls_to_xlsx(file_bytes).read()
+                
+                # Read into pandas
+                df = pd.read_excel(io.BytesIO(file_bytes), skiprows=4, dtype=str)
 
                 if i == 0:
                     merged_df = df.copy()
