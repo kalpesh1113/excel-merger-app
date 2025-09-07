@@ -12,7 +12,7 @@ st.write("""
 यह tool multiple Excel files को merge करता है:
 1. पहले 4 rows हटाए जाते हैं (header merge वाले).
 2. Row no. 5 को header माना जाता है.
-3. BU column के हिसाब से "TIME SOLAT" column auto भरता है → `APP-BAL-<BU>`.
+3. BU column के हिसाब से "TIME SLOT" column auto भरता है → `APP-BAL-<BU>`.
 4. सभी files merge होकर एक ही Excel बनती है.
 """)
 
@@ -63,8 +63,8 @@ if st.button("🚀 Merge Files"):
                     merged_df = pd.concat([merged_df, df], ignore_index=True)
 
             if merged_df is not None:
-                if "BU" in merged_df.columns and "TIME SOLAT" in merged_df.columns:
-                    merged_df["TIME SOLAT"] = "APP-BAL-" + merged_df["BU"].astype(str)
+                if "BU" in merged_df.columns and "TIME SLOT" in merged_df.columns:
+                    merged_df["TIME SLOT"] = "APP-BAL-" + merged_df["BU"].astype(str)
 
                 output_file = "Merged_Output.xlsx"
                 merged_df.to_excel(output_file, index=False)
