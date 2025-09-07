@@ -105,7 +105,7 @@ if st.button("🚀 Merge Files"):
                 date_str = datetime.datetime.now().strftime("%d%b%Y")  # e.g. 07Sep2025
 
                 # ✅ Final filename
-                output_file = f"{bu_part}_BalanceConsForReading_{date_str}.xlsx"
+                output_file = f"AppBalanceConsForReading_{date_str}.xlsx"
 
                 merged_df.to_excel(output_file, index=False)
 
